@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id              Int         @id @default(autoincrement())
+  title           String
+  description     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  completed       Boolean     @default(false)
+  archived        Boolean     @default(false)
+  startDate       DateTime
+  endDate         DateTime?
+  reminderEnabled Boolean     @default(false)
+  reminderSound   String?
+  user            User        @relation(fields: [userId], references: [id])
+  userId          Int
+  sharedWith      TaskShare[]
+  imageUrl        String?
+  audioUrl        String?
+}
+
+enum Permission {faire mes endpoind
+  READ
+  WRITE
+  DELETE
+}
+
+model TaskShare {
+  id         Int        @id @default(autoincrement())
+  taskId     Int
+  task       Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  sharedWith User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  permission Permission
+  createdAt  DateTime   @default(now())
+
+  @@unique([taskId, userId])
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id          Int         @id @default(autoincrement())
+  name        String
+  email       String      @unique
+  password    String
+  role        Role        @default(USER)
+  tasks       Task[]
+  sharedTasks TaskShare[]
+}
+
+// model Token {
+//   id        Int     @id @default(autoincrement())
+//   token     String
+//   userId    Int     @unique
+//   user      User    @relation(fields: [userId], references: [id])
+//   createdAt DateTime @default(now())
+// }

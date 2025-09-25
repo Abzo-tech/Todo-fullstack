@@ -1,0 +1,128 @@
+=== DONNÉES DE TEST POUR L'APPLICATION TODO ===
+
+UTILISATEURS DE TEST :
+=====================
+1. Alice Dupont     - alice.dupont@example.com     - password123 (USER)
+2. Bob Martin       - bob.martin@example.com       - password123 (USER)
+3. Charlie Durand   - charlie.durand@example.com   - password123 (USER)
+4. Diana Prince     - diana.prince@example.com     - password123 (USER)
+5. Admin System     - admin@example.com            - admin123    (ADMIN)
+
+TÂCHES PAR UTILISATEUR :
+========================
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NTc0OTcxMDQsImV4cCI6MTc1NzUwMDcwNH0.wmVzwjtVtEV5PWg4rJoap1YruyMd095R6dlXVvQWhqI
+ALICE DUPONT :
+-------------
+1. "Acheter du pain" - Non complétée
+   Description: Aller à la boulangerie du coin pour acheter une baguette fraîche
+
+2. "Réviser TypeScript" - Complétée
+   Description: Étudier les types avancés et les génériques en TypeScript
+
+3. "Appeler maman" - Non complétée
+   Description: Téléphoner à maman pour prendre des nouvelles
+
+BOB MARTIN :
+-----------
+4. "Faire les courses" - Non complétée
+   Description: Liste de courses : lait, œufs, fromage, légumes
+
+5. "Nettoyer la voiture" - Complétée
+   Description: Laver l'extérieur et aspirer l'intérieur de la voiture
+
+6. "Préparer présentation" - Non complétée
+   Description: Préparer les slides pour la réunion de demain
+
+CHARLIE DURAND :
+---------------
+7. "Sport - Course à pied" - Non complétée
+   Description: Faire 5km de course dans le parc
+
+8. "Lire un livre" - Complétée
+   Description: Commencer le nouveau roman de science-fiction
+
+DIANA PRINCE :
+-------------
+9. "Rendez-vous dentiste" - Non complétée
+   Description: RDV chez le dentiste à 14h30
+
+10. "Planifier vacances" - Non complétée
+    Description: Rechercher des destinations et comparer les prix
+
+ADMIN SYSTEM :
+-------------
+11. "Maintenance serveur" - Non complétée
+    Description: Vérifier les logs et mettre à jour les dépendances
+
+12. "Réunion équipe" - Complétée
+    Description: Point hebdomadaire avec l'équipe de développement
+
+PARTAGES DE TÂCHES :
+===================
+
+1. Alice partage "Réviser TypeScript" avec Bob (READ)
+2. Alice partage "Appeler maman" avec Charlie (WRITE)
+3. Bob partage "Préparer présentation" avec Diana (READ)
+4. Charlie partage "Sport - Course à pied" avec Alice (WRITE)
+
+COMMENT UTILISER :
+=================
+
+1. Exécuter le seed :
+   npx ts-node prisma/test_data_seed.js
+
+2. Démarrer le serveur :
+   npm run dev
+
+3. Se connecter avec un utilisateur :
+   POST /auth/login
+   {
+     "email": "alice.dupont@example.com",
+     "password": "password123"
+   }
+
+4. Utiliser l'API avec le token JWT reçu :
+   GET /tasks
+   POST /tasks
+   PATCH /tasks/:id/toggle
+
+EXEMPLES DE TESTS :
+==================
+
+AUTHENTIFICATION :
+-----------------
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice.dupont@example.com",
+  "password": "password123"
+}
+
+RÉCUPÉRER LES TÂCHES :
+---------------------
+GET http://localhost:3000/tasks
+Authorization: Bearer VOTRE_TOKEN_JWT
+
+CRÉER UNE TÂCHE :
+----------------
+POST http://localhost:3000/tasks
+Authorization: Bearer VOTRE_TOKEN_JWT
+Content-Type: application/json
+
+{
+  "title": "Nouvelle tâche",
+  "description": "Description de la tâche"
+}
+
+BASCULER UNE TÂCHE :
+-------------------
+PATCH http://localhost:3000/tasks/1/toggle
+Authorization: Bearer VOTRE_TOKEN_JWT
+
+TESTER LES PARTAGES :
+--------------------
+- Connectez-vous avec alice.dupont@example.com
+- Vous devriez voir la tâche "Sport - Course à pied" de Charlie (partagée en WRITE)
+- Connectez-vous avec bob.martin@example.com
+- Vous devriez voir la tâche "Réviser TypeScript" d'Alice (partagée en READ)
