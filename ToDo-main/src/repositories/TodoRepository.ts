@@ -10,6 +10,11 @@ export class TodoRepository implements IRepository<Task> {
     return this.prisma.task.findMany({
       include: {
         user: true, // récupère le user lié à chaque tâche
+        sharedWith: {
+          include: {
+            sharedWith: true
+          }
+        }
       },
     });
   }
@@ -35,7 +40,14 @@ export class TodoRepository implements IRepository<Task> {
     try {
       const result = await this.prisma.task.findMany({
         where: { userId },
-        include: { user: true },
+        include: {
+          user: true,
+          sharedWith: {
+            include: {
+              sharedWith: true
+            }
+          }
+        },
       });
       console.log('findByUserId result:', result.length, 'tasks');
       return result;
@@ -126,6 +138,11 @@ export class TodoRepository implements IRepository<Task> {
           task: {
             include: {
               user: true,
+              sharedWith: {
+                include: {
+                  sharedWith: true
+                }
+              }
             },
           },
         },
