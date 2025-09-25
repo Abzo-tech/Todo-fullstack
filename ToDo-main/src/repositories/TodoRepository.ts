@@ -94,7 +94,7 @@ export class TodoRepository implements IRepository<Task> {
   }
 
   // Méthodes pour le partage de tâches
-  async shareTask(taskId: number, sharedWithId: number, permission: Permission): Promise<TaskShare> {
+  async shareTask(taskId: number, sharedWithId: number, permissions: string[]): Promise<TaskShare> {
     if (!taskId || taskId <= 0 || !sharedWithId || sharedWithId <= 0) {
       throw new Error("Invalid task ID or user ID");
     }
@@ -102,7 +102,7 @@ export class TodoRepository implements IRepository<Task> {
       data: {
         taskId,
         userId: sharedWithId,
-        permission,
+        permissions,
       },
       include: {
         task: true,
@@ -171,7 +171,7 @@ export class TodoRepository implements IRepository<Task> {
     });
   }
 
-  async updateTaskShare(taskId: number, userId: number, permission: Permission): Promise<TaskShare> {
+  async updateTaskShare(taskId: number, userId: number, permissions: string[]): Promise<TaskShare> {
     if (!taskId || taskId <= 0 || !userId || userId <= 0) {
       throw new Error("Invalid task ID or user ID");
     }
@@ -182,7 +182,7 @@ export class TodoRepository implements IRepository<Task> {
           userId,
         },
       },
-      data: { permission },
+      data: { permissions },
       include: {
         task: true,
         sharedWith: true,
@@ -205,7 +205,7 @@ export class TodoRepository implements IRepository<Task> {
     return !!result;
   }
 
-  async canUserAccessTask(taskId: number, userId: number): Promise<{ canAccess: boolean; permission?: Permission; isOwner?: boolean }> {
+  async canUserAccessTask(taskId: number, userId: number): Promise<{ canAccess: boolean; permissions?: string[]; isOwner?: boolean }> {
     console.log('canUserAccessTask called with taskId:', taskId, 'userId:', userId);
 
     // Validation plus stricte des paramètres
@@ -240,7 +240,7 @@ export class TodoRepository implements IRepository<Task> {
       console.log('canUserAccessTask: share result:', share);
       if (share) {
         console.log('canUserAccessTask: user has access via share');
-        return { canAccess: true, permission: share.permission };
+        return { canAccess: true, permissions: share.permissions as string[] };
       }
 
       console.log('canUserAccessTask: no access');
@@ -256,8 +256,8 @@ export class TodoRepository implements IRepository<Task> {
     if (!access.canAccess) return false;
     if (access.isOwner) return true;
 
-    // L'utilisateur peut modifier si la permission est WRITE ou DELETE
-    return access.permission === Permission.WRITE || access.permission === Permission.DELETE;
+    // L'utilisateur peut modifier si les permissions incluent WRITE ou DELETE
+    return access.permissions?.includes('WRITE') || access.permissions?.includes('DELETE') || false;
   }
 
   async canUserDeleteTask(taskId: number, userId: number): Promise<boolean> {
@@ -265,8 +265,8 @@ export class TodoRepository implements IRepository<Task> {
     if (!access.canAccess) return false;
     if (access.isOwner) return true;
 
-    // L'utilisateur peut supprimer seulement si la permission est DELETE
-    return access.permission === Permission.DELETE;
+    // L'utilisateur peut supprimer seulement si les permissions incluent DELETE
+    return access.permissions?.includes('DELETE') || false;
   }
 
   // Méthode pour trouver un utilisateur par email

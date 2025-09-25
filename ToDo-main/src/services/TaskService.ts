@@ -53,7 +53,7 @@ export class TaskService {
     taskId: number,
     ownerId: number,
     sharedWithId: number,
-    permission: Permission
+    permissions: string[]
   ) {
     // Vérifier que l'utilisateur est le propriétaire de la tâche
     const task = await this.findTaskById(taskId);
@@ -70,7 +70,15 @@ export class TaskService {
       throw new Error("Vous ne pouvez pas partager une tâche avec vous-même");
     }
 
-    return this.repo.shareTask(taskId, sharedWithId, permission);
+    // Valider les permissions
+    const validPermissions = ['READ', 'WRITE', 'DELETE'];
+    for (const perm of permissions) {
+      if (!validPermissions.includes(perm)) {
+        throw new Error(`Permission invalide: ${perm}`);
+      }
+    }
+
+    return this.repo.shareTask(taskId, sharedWithId, permissions);
   }
 
   async getTaskShares(taskId: number, userId: number) {
@@ -91,14 +99,14 @@ export class TaskService {
     taskId: number,
     ownerId: number,
     sharedWithId: number,
-    permission: Permission
+    permissions: string[]
   ) {
     const task = await this.findTaskById(taskId);
     if (!task || task.userId !== ownerId) {
       throw new Error("Seul le propriétaire peut modifier les permissions");
     }
 
-    return this.repo.updateTaskShare(taskId, sharedWithId, permission);
+    return this.repo.updateTaskShare(taskId, sharedWithId, permissions);
   }
 
   async removeTaskShare(taskId: number, ownerId: number, sharedWithId: number) {

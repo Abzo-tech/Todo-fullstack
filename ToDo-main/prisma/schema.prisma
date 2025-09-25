@@ -38,7 +38,7 @@ model TaskShare {
   task       Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
   sharedWith User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
-  permission Permission
+  permissions Json       // Array of permissions: ["READ", "WRITE", "DELETE"]
   createdAt  DateTime   @default(now())
 
   @@unique([taskId, userId])

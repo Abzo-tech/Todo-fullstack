@@ -237,34 +237,40 @@ async function main() {
 
   // Création des partages de tâches pour tester la fonctionnalité
   const sharesData = [
-    // Alice partage sa tâche "Réviser TypeScript" avec Bob (READ)
+    // Alice partage sa tâche "Réviser TypeScript" avec Bob (READ + WRITE)
     {
       taskId: tasks[1].id, // Tâche d'Alice
       userId: users[1].id, // Bob
-      permission: Permission.READ,
+      permissions: ['READ', 'WRITE'],
     },
-    // Alice partage sa tâche "Appeler maman" avec Charlie (WRITE)
+    // Alice partage sa tâche "Appeler maman" avec Charlie (WRITE + DELETE)
     {
       taskId: tasks[2].id, // Tâche d'Alice
       userId: users[2].id, // Charlie
-      permission: Permission.WRITE,
+      permissions: ['WRITE', 'DELETE'],
     },
-    // Bob partage sa tâche "Préparer présentation" avec Diana (READ)
+    // Bob partage sa tâche "Préparer présentation" avec Diana (READ only)
     {
       taskId: tasks[5].id, // Tâche de Bob
       userId: users[3].id, // Diana
-      permission: Permission.READ,
+      permissions: ['READ'],
     },
-    // Charlie partage sa tâche "Sport - Course à pied" avec Alice (WRITE)
+    // Charlie partage sa tâche "Sport - Course à pied" avec Alice (READ + WRITE + DELETE)
     {
       taskId: tasks[6].id, // Tâche de Charlie
       userId: users[0].id, // Alice
-      permission: Permission.WRITE,
+      permissions: ['READ', 'WRITE', 'DELETE'],
     },
   ];
 
   for (const shareData of sharesData) {
-    await prisma.taskShare.create({ data: shareData });
+    await prisma.taskShare.create({
+      data: {
+        taskId: shareData.taskId,
+        userId: shareData.userId,
+        permissions: shareData.permissions,
+      }
+    });
   }
 
   console.log("Données de test créées avec succès !");

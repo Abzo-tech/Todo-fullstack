@@ -185,38 +185,41 @@ export class TaskController {
   shareTask = async (req: Request, res: Response) => {
     try {
       const taskId = Number(req.params.id);
-      const { userId: sharedWithId, permission } = req.body;
+      const { userId: sharedWithId, permissions } = req.body;
       const ownerId = req.user?.id;
 
       if (!ownerId) {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      if (!sharedWithId || !permission) {
+      if (!sharedWithId || !permissions || !Array.isArray(permissions) || permissions.length === 0) {
         return res
           .status(400)
-          .json({ error: "userId et permission sont requis" });
+          .json({ error: "userId et permissions (tableau) sont requis" });
       }
 
-      // Valider la permission
-      if (!Object.values(Permission).includes(permission)) {
-        return res
-          .status(400)
-          .json({
-            error: "Permission invalide. Utilisez READ, WRITE ou DELETE",
-          });
+      // Valider les permissions
+      const validPermissions = ['READ', 'WRITE', 'DELETE'];
+      for (const perm of permissions) {
+        if (!validPermissions.includes(perm)) {
+          return res
+            .status(400)
+            .json({
+              error: `Permission invalide: ${perm}. Utilisez READ, WRITE ou DELETE`,
+            });
+        }
       }
 
       const share = await this.taskService.shareTask(
         taskId,
         ownerId,
         sharedWithId,
-        permission
+        permissions
       );
 
       // Émettre une notification temps réel au destinataire
       emitNotification(sharedWithId, 'taskShared', {
-        message: `Une tâche vous a été partagée`,
+        message: `Une tâche vous a été partagée avec les permissions: ${permissions.join(', ')}`,
         type: 'success',
         share: share
       });
@@ -262,31 +265,34 @@ export class TaskController {
     try {
       const taskId = Number(req.params.id);
       const sharedWithId = Number(req.params.userId);
-      const { permission } = req.body;
+      const { permissions } = req.body;
       const ownerId = req.user?.id;
 
       if (!ownerId) {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      if (!permission) {
-        return res.status(400).json({ error: "Permission est requise" });
+      if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
+        return res.status(400).json({ error: "Permissions (tableau) sont requises" });
       }
 
-      // Valider la permission
-      if (!Object.values(Permission).includes(permission)) {
-        return res
-          .status(400)
-          .json({
-            error: "Permission invalide. Utilisez READ, WRITE ou DELETE",
-          });
+      // Valider les permissions
+      const validPermissions = ['READ', 'WRITE', 'DELETE'];
+      for (const perm of permissions) {
+        if (!validPermissions.includes(perm)) {
+          return res
+            .status(400)
+            .json({
+              error: `Permission invalide: ${perm}. Utilisez READ, WRITE ou DELETE`,
+            });
+        }
       }
 
       const share = await this.taskService.updateTaskShare(
         taskId,
         ownerId,
         sharedWithId,
-        permission
+        permissions
       );
       return res.json(share);
     } catch (error: any) {
