@@ -37,7 +37,6 @@ export class TaskController {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      // Vérifier les permissions d'accès
       const access = await this.taskService.canUserAccessTask(id, userId);
       if (!access.canAccess) {
         return res
@@ -62,7 +61,6 @@ export class TaskController {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
       const data = CreateTaskSchema.parse(req.body);
-      // Convertir les dates en objets Date pour Prisma
       const taskData = {
         ...data,
         userId,
@@ -71,7 +69,6 @@ export class TaskController {
       } as Omit<Task, "id">;
       const adtask = await this.taskService.createTask(taskData);
 
-      // Émettre une notification temps réel
       emitNotification(userId, 'taskCreated', {
         message: `Nouvelle tâche créée: "${adtask.title}"`,
         type: 'success',
@@ -94,7 +91,6 @@ export class TaskController {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      // Vérifier les permissions de modification
       const canModify = await this.taskService.canUserModifyTask(id, userId);
       if (!canModify) {
         return res
@@ -105,7 +101,6 @@ export class TaskController {
       }
 
       const data = CreateTaskSchema.parse(req.body);
-      // Convertir les dates en objets Date pour Prisma
       const updateData = {
         ...data,
         startDate: data.startDate ? new Date(data.startDate) : undefined,
@@ -129,7 +124,6 @@ export class TaskController {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      // Vérifier les permissions de suppression
       const canDelete = await this.taskService.canUserDeleteTask(id, userId);
       if (!canDelete) {
         return res
@@ -155,7 +149,6 @@ export class TaskController {
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
 
-      // Vérifier les permissions d'accès (le toggle nécessite au minimum READ)
       const access = await this.taskService.canUserAccessTask(id, userId);
       if (!access.canAccess) {
         return res
@@ -168,7 +161,6 @@ export class TaskController {
         return res.status(404).json({ error: "Tâche non trouvée" });
       }
 
-      // Émettre une notification temps réel
       emitNotification(userId, 'taskUpdated', {
         message: `Tâche "${adtask.title}" ${adtask.completed ? 'terminée' : 'marquée comme active'}`,
         type: 'info',
@@ -181,7 +173,6 @@ export class TaskController {
     }
   };
 
-  // Méthodes pour le partage de tâches
   shareTask = async (req: Request, res: Response) => {
     try {
       const taskId = Number(req.params.id);
@@ -217,7 +208,6 @@ export class TaskController {
         permissions
       );
 
-      // Émettre une notification temps réel au destinataire
       emitNotification(sharedWithId, 'taskShared', {
         message: `Une tâche vous a été partagée avec les permissions: ${permissions.join(', ')}`,
         type: 'success',
@@ -339,7 +329,6 @@ export class TaskController {
         return res.status(400).json({ error: "Aucune image envoyée" });
       }
 
-      // Vérifier les permissions de modification
       const canModify = await this.taskService.canUserModifyTask(id, userId);
       if (!canModify) {
         return res
@@ -372,7 +361,6 @@ export class TaskController {
         return res.status(400).json({ error: "Aucun fichier audio envoyé" });
       }
 
-      // Vérifier les permissions de modification
       const canModify = await this.taskService.canUserModifyTask(id, userId);
       if (!canModify) {
         return res
@@ -391,7 +379,6 @@ export class TaskController {
     }
   }
 
-  // Méthodes pour l'archivage des tâches
   archive = async (req: Request, res: Response) => {
     try {
       const id: number = Number(req.params.id);
@@ -460,7 +447,6 @@ export class TaskController {
         return res.status(404).json({ error: "Utilisateur non trouvé" });
       }
 
-      // Ne pas retourner le mot de passe
       const { password, ...userWithoutPassword } = user;
       return res.json(userWithoutPassword);
     } catch (error: any) {
@@ -471,21 +457,12 @@ export class TaskController {
   getAllCategorized = async (req: Request, res: Response) => {
     try {
       const userId = req.user?.id;
-      console.log('getAllCategorized called, userId:', userId, 'type:', typeof userId);
-
-      // Validation plus stricte de l'userId
       if (!userId || typeof userId !== 'number' || userId <= 0 || !Number.isInteger(userId)) {
-        console.log('Invalid userId:', userId, 'type:', typeof userId);
         return res.status(401).json({ error: "Utilisateur non authentifié" });
       }
-
-      console.log('Calling taskService.getAllTasksCategorized with userId:', userId);
       const categorizedTasks = await this.taskService.getAllTasksCategorized(userId);
-      console.log('categorizedTasks result:', categorizedTasks);
       return res.json(categorizedTasks);
     } catch (error: any) {
-      console.log('Error in getAllCategorized:', error.message);
-      console.log('Error stack:', error.stack);
       return res.status(500).json({ error: error.message });
     }
   };
